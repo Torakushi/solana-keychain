@@ -14,7 +14,7 @@ jobs:
         working-directory: typescript
     strategy:
       matrix:
-        package: [vault, privy, turnkey, fireblocks, gcp-kms]
+        package: [vault, privy, turnkey, fireblocks, gcp-kms, dfns]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -41,7 +41,7 @@ jobs:
         working-directory: typescript
     strategy:
       matrix:
-        package: [privy, turnkey, fireblocks, aws-kms, gcp-kms]
+        package: [privy, turnkey, fireblocks, aws-kms, gcp-kms, dfns]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

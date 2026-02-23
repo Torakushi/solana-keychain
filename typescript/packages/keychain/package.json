@@ -14,7 +14,8 @@
         "turnkey",
         "aws",
         "kms",
-        "fireblocks"
+        "fireblocks",
+        "dfns"
     ],
     "type": "module",
     "sideEffects": false,
@@ -40,6 +41,7 @@
     "dependencies": {
         "@solana/keychain-core": "workspace:*",
         "@solana/keychain-aws-kms": "workspace:*",
+        "@solana/keychain-dfns": "workspace:*",
         "@solana/keychain-fireblocks": "workspace:*",
         "@solana/keychain-gcp-kms": "workspace:*",
         "@solana/keychain-privy": "workspace:*",
