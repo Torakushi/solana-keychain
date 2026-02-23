@@ -13,6 +13,7 @@
 //! - `aws_kms`: AWS KMS integration with EdDSA (Ed25519) signing
 //! - `fireblocks`: Fireblocks API integration
 //! - `gcp_kms`: GCP KMS integration with EdDSA (Ed25519) signing
+//! - `dfns`: Dfns Wallet API integration
 //! - `all`: Enable all signer backends
 //!
 //! ## SDK Version Selection
@@ -52,6 +53,9 @@ pub mod fireblocks;
 #[cfg(feature = "gcp_kms")]
 pub mod gcp_kms;
 
+#[cfg(feature = "dfns")]
+pub mod dfns;
+
 // Re-export core types
 pub use error::SignerError;
 pub use traits::SolanaSigner;
@@ -78,6 +82,9 @@ pub use fireblocks::{FireblocksSigner, FireblocksSignerConfig};
 #[cfg(feature = "gcp_kms")]
 pub use gcp_kms::GcpKmsSigner;
 
+#[cfg(feature = "dfns")]
+pub use dfns::{DfnsSigner, DfnsSignerConfig};
+
 use crate::traits::SignedTransaction;
 
 // Ensure at least one signer backend is enabled
@@ -88,10 +95,11 @@ use crate::traits::SignedTransaction;
     feature = "turnkey",
     feature = "aws_kms",
     feature = "fireblocks",
-    feature = "gcp_kms"
+    feature = "gcp_kms",
+    feature = "dfns"
 )))]
 compile_error!(
-    "At least one signer backend feature must be enabled: memory, vault, privy, turnkey, aws_kms, fireblocks, or gcp_kms"
+    "At least one signer backend feature must be enabled: memory, vault, privy, turnkey, aws_kms, fireblocks, gcp_kms, or dfns"
 );
 
 /// Unified signer enum supporting multiple backends
@@ -116,6 +124,9 @@ pub enum Signer {
 
     #[cfg(feature = "gcp_kms")]
     GcpKms(GcpKmsSigner),
+
+    #[cfg(feature = "dfns")]
+    Dfns(DfnsSigner),
 }
 
 impl Signer {
@@ -198,6 +209,14 @@ impl Signer {
     pub async fn from_gcp_kms(key_name: String, public_key: String) -> Result<Self, SignerError> {
         Ok(Self::GcpKms(GcpKmsSigner::new(key_name, public_key).await?))
     }
+
+    /// Create a Dfns signer (requires initialization)
+    #[cfg(feature = "dfns")]
+    pub async fn from_dfns(config: DfnsSignerConfig) -> Result<Self, SignerError> {
+        let mut signer = DfnsSigner::new(config);
+        signer.init().await?;
+        Ok(Self::Dfns(signer))
+    }
 }
 
 #[async_trait::async_trait]
@@ -224,6 +243,9 @@ impl SolanaSigner for Signer {
 
             #[cfg(feature = "gcp_kms")]
             Signer::GcpKms(s) => s.pubkey(),
+
+            #[cfg(feature = "dfns")]
+            Signer::Dfns(s) => s.pubkey(),
         }
     }
 
@@ -252,6 +274,9 @@ impl SolanaSigner for Signer {
 
             #[cfg(feature = "gcp_kms")]
             Signer::GcpKms(s) => s.sign_transaction(tx).await,
+
+            #[cfg(feature = "dfns")]
+            Signer::Dfns(s) => s.sign_transaction(tx).await,
         }
     }
 
@@ -277,6 +302,9 @@ impl SolanaSigner for Signer {
 
             #[cfg(feature = "gcp_kms")]
             Signer::GcpKms(s) => s.sign_message(message).await,
+
+            #[cfg(feature = "dfns")]
+            Signer::Dfns(s) => s.sign_message(message).await,
         }
     }
 
@@ -305,6 +333,9 @@ impl SolanaSigner for Signer {
 
             #[cfg(feature = "gcp_kms")]
             Signer::GcpKms(s) => s.sign_partial_transaction(tx).await,
+
+            #[cfg(feature = "dfns")]
+            Signer::Dfns(s) => s.sign_partial_transaction(tx).await,
         }
     }
 
@@ -330,6 +361,9 @@ impl SolanaSigner for Signer {
 
             #[cfg(feature = "gcp_kms")]
             Signer::GcpKms(s) => s.is_available().await,
+
+            #[cfg(feature = "dfns")]
+            Signer::Dfns(s) => s.is_available().await,
         }
     }
 }

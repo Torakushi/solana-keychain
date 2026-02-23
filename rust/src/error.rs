@@ -63,7 +63,8 @@ impl From<serde_json::Error> for SignerError {
     feature = "vault",
     feature = "privy",
     feature = "turnkey",
-    feature = "fireblocks"
+    feature = "fireblocks",
+    feature = "dfns"
 ))]
 impl From<reqwest::Error> for SignerError {
     fn from(err: reqwest::Error) -> Self {
